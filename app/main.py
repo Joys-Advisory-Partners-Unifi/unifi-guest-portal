@@ -1,16 +1,14 @@
 import logging
 import secrets
-from urllib.parse import urlencode
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.auth import get_authorization_url, exchange_code_for_token, get_userinfo, get_guest_duration
 from app.config import load_config
 from app.unifi import authorize_guest
-
-from fastapi.staticfiles import StaticFiles
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,7 +31,7 @@ async def index(request: Request):
     })
 
 
-@app.get("/portal", response_class=HTMLResponse)
+@app.get("/portal")
 async def portal(request: Request, site: str, mac: str, ap: str = "", url: str = ""):
     """
     Entry point from UniFi captive portal redirect.
@@ -50,17 +48,24 @@ async def portal(request: Request, site: str, mac: str, ap: str = "", url: str =
         "url": url,
     }
 
+    auth_url = get_authorization_url(config, state)
+    return RedirectResponse(auth_url)
+
+
 @app.get("/guest/s/{site_id}/")
 async def unifi_portal(request: Request, site_id: str, ap: str = "", id: str = "", t: str = "", url: str = "", ssid: str = ""):
     """Handle UniFi's default captive portal redirect format."""
-    # Map ssid to site
     site = next((s for s in config.sites.values() if s.ssid == ssid), None)
     if site is None:
-        # Fall back to first site
         site = next(iter(config.sites.values()))
 
-    mac = id  # UniFi sends MAC as 'id' parameter
-    return await portal(request, site=site.id, mac=mac, ap=ap, url=url)
+    state = secrets.token_urlsafe(32)
+    state_store[state] = {
+        "site": site.id,
+        "mac": id,
+        "ap": ap,
+        "url": url,
+    }
 
     auth_url = get_authorization_url(config, state)
     return RedirectResponse(auth_url)

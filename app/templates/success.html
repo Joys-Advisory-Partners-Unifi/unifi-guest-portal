@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>You're connected!</h1>
+<p>Welcome to {{ site.name }} Guest WiFi.</p>
+<p>Your device has been authorized for <strong>{{ duration_hours }} hours</strong>.</p>
+{% if original_url %}
+<a class="btn" href="{{ original_url }}">Continue Browsing</a>
+{% endif %}
+{% endblock %}

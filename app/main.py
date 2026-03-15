@@ -10,10 +10,13 @@ from app.auth import get_authorization_url, exchange_code_for_token, get_userinf
 from app.config import load_config
 from app.unifi import authorize_guest
 
+from fastapi.staticfiles import StaticFiles
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 config = load_config()
 

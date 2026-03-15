@@ -50,6 +50,18 @@ async def portal(request: Request, site: str, mac: str, ap: str = "", url: str =
         "url": url,
     }
 
+    @app.get("/guest/s/{site_id}/")
+    async def unifi_portal(request: Request, site_id: str, ap: str = "", id: str = "", t: str = "", url: str = "", ssid: str = ""):
+        """Handle UniFi's default captive portal redirect format."""
+        # Map ssid to site
+        site = next((s for s in config.sites.values() if s.ssid == ssid), None)
+        if site is None:
+            # Fall back to first site
+            site = next(iter(config.sites.values()))
+
+        mac = id  # UniFi sends MAC as 'id' parameter
+        return await portal(request, site=site.id, mac=mac, ap=ap, url=url)
+
     auth_url = get_authorization_url(config, state)
     return RedirectResponse(auth_url)
 

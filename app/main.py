@@ -10,6 +10,8 @@ from app.auth import get_authorization_url, exchange_code_for_token, get_userinf
 from app.config import load_config
 from app.unifi import authorize_guest
 
+from app.unifi import authorize_guest, set_guest_name
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -98,6 +100,7 @@ async def callback(request: Request, code: str, state: str):
     success = authorize_guest(site, mac, duration)
     user_agent = request.headers.get("user-agent", "").lower()
     logger.info("User agent: %s", user_agent)
+    set_guest_name(site, mac, userinfo.get("preferred_username", "Guest"), user_agent)
 
     if not success:
         return templates.TemplateResponse("error.html", {

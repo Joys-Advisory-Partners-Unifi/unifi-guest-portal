@@ -1,7 +1,10 @@
-import logging
 from unifi_utils import UnifiUtils, UnifiAPI
 from app.config import SiteConfig
 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+import logging
 logger = logging.getLogger(__name__)
 
 
@@ -13,6 +16,7 @@ def authorize_guest(site: SiteConfig, mac: str, duration_minutes: int) -> bool:
             api_key=site.unifi_api_key,
             site=site.unifi_site,
         )
+        unifi.session.verify = False
         response = unifi.make_api_call(
             UnifiAPI.ClientAuthorizeGuestPost,
             json_body={

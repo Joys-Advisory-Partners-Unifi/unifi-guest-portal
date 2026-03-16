@@ -16,9 +16,9 @@ def get_authorization_url(config: AppConfig, state: str) -> str:
         "state": state,
     }
     query = "&".join(f"{k}={v}" for k, v in params.items())
+    url = f"{config.authentik_host}/application/o/authorize/?{query}"
     logger.info("Authorization URL: %s", url)
-    return f"{config.authentik_host}/application/o/authorize/?{query}"
-
+    return url
 
 async def exchange_code_for_token(config: AppConfig, code: str) -> dict:
     async with httpx.AsyncClient() as client:

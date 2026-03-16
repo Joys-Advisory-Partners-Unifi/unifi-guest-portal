@@ -1,5 +1,8 @@
 import httpx
 from app.config import AppConfig
+import logging
+logger = logging.getLogger(__name__)
+
 
 SCOPES = "openid email profile"
 
@@ -13,6 +16,7 @@ def get_authorization_url(config: AppConfig, state: str) -> str:
         "state": state,
     }
     query = "&".join(f"{k}={v}" for k, v in params.items())
+    logger.info("Authorization URL: %s", url)
     return f"{config.authentik_host}/application/o/authorize/?{query}"
 
 

@@ -12,7 +12,16 @@
         el.textContent = seconds;
         if (seconds <= 0) {
             clearInterval(timer);
-            window.location.href = "{{ original_url }}";
+            const ua = "{{ user_agent }}";
+            if (ua.includes("iphone") || ua.includes("ipad") || ua.includes("mac")) {
+                window.location.href = "http://captive.apple.com/hotspot-detect.html";
+            } else if (ua.includes("android")) {
+                window.location.href = "http://connectivitycheck.gstatic.com/generate_204";
+            } else if (ua.includes("windows")) {
+                window.location.href = "http://www.msftconnecttest.com/connecttest.txt";
+            } else {
+                window.location.href = "{{ original_url }}";
+            }
         }
     }, 1000);
 </script>

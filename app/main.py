@@ -96,6 +96,7 @@ async def callback(request: Request, code: str, state: str):
 
     duration = get_guest_duration(userinfo, site.default_duration_minutes)
     success = authorize_guest(site, mac, duration)
+    user_agent = request.headers.get("user-agent", "").lower()
 
     if not success:
         return templates.TemplateResponse("error.html", {
@@ -109,4 +110,5 @@ async def callback(request: Request, code: str, state: str):
         "userinfo": userinfo,
         "duration_hours": duration // 60,
         "original_url": original_url,
+        "user_agent": user_agent,
     })

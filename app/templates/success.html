@@ -3,7 +3,17 @@
 <h1>You're connected!</h1>
 <p>Welcome to {{ site.name }} Guest WiFi.</p>
 <p>Your device has been authorized for <strong>{{ duration_hours }} hours</strong>.</p>
-{% if original_url %}
-<a class="btn" href="{{ original_url }}">Continue Browsing</a>
-{% endif %}
+<p style="color: #999; font-size: 0.85rem;">This window will close in <span id="countdown">15</span> seconds...</p>
+<script>
+    let seconds = 15;
+    const el = document.getElementById('countdown');
+    const timer = setInterval(() => {
+        seconds--;
+        el.textContent = seconds;
+        if (seconds <= 0) {
+            clearInterval(timer);
+            window.close();
+        }
+    }, 1000);
+</script>
 {% endblock %}

@@ -72,6 +72,12 @@ async def unifi_portal(request: Request, site_id: str, ap: str = "", id: str = "
     auth_url = get_authorization_url(config, state)
     return RedirectResponse(auth_url)
 
+@app.get("/enroll-success", response_class=HTMLResponse)
+async def enroll_success(request: Request, username: str = ""):
+    return templates.TemplateResponse("enroll-success.html", {
+        "request": request,
+        "username": username,
+    })
 
 @app.get("/callback")
 async def callback(request: Request, code: str, state: str):

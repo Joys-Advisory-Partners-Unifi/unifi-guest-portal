@@ -12,7 +12,7 @@
         el.textContent = seconds;
         if (seconds <= 0) {
             clearInterval(timer);
-            window.close();
+            window.location.href = "{{ original_url }}";
         }
     }, 1000);
 </script>

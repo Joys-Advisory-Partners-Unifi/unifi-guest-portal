@@ -114,11 +114,19 @@ async def callback(request: Request, code: str, state: str):
             "message": "Failed to authorize your device. Please try again or ask for help."
         })
 
-    return templates.TemplateResponse("success.html", {
-        "request": request,
-        "site": site,
-        "userinfo": userinfo,
-        "duration_hours": duration // 60,
-        "original_url": original_url,
-        "user_agent": user_agent,
-    })
+
+    try:
+        template = templates.env.get_template("success.html")
+        html = template.render(
+            request=request,
+            site={"id": site.id, "name": site.name},
+            userinfo=userinfo,
+            duration_hours=duration // 60,
+            original_url=original_url,
+            user_agent=user_agent,
+        )
+        return HTMLResponse(html)
+    except Exception as e:
+        logger.error("Success template error: %s", str(e))
+        return RedirectResponse(original_url or "http://captive.apple.com/hotspot-detect.html")
+

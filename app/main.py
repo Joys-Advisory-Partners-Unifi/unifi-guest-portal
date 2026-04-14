@@ -27,10 +27,17 @@ state_store: dict[str, dict] = {}
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Entry point — shown when no site/mac params are present."""
-    return templates.TemplateResponse("error.html", {
-        "request": request,
-        "message": "No guest session found. Please connect to the guest WiFi first."
-    })
+    try:
+        template = templates.env.get_template("error.html")
+        html = template.render(
+            request=request,
+            message="No guest session found. Please connect to the guest WiFi first.",
+            detail="Please try reconnecting to the guest WiFi or ask for assistance."
+        )
+        return HTMLResponse(html)
+    except Exception as e:
+        logger.error("Index template error: %s", str(e))
+        return HTMLResponse("<h1>No guest session found. Please connect to the guest WiFi first.</h1>")
 
 
 @app.get("/portal")
@@ -72,12 +79,20 @@ async def unifi_portal(request: Request, site_id: str, ap: str = "", id: str = "
     auth_url = get_authorization_url(config, state)
     return RedirectResponse(auth_url)
 
+
 @app.get("/enroll-success", response_class=HTMLResponse)
 async def enroll_success(request: Request, username: str = ""):
-    return templates.TemplateResponse("enroll-success.html", {
-        "request": request,
-        "username": username,
-    })
+    try:
+        template = templates.env.get_template("enroll-success.html")
+        html = template.render(
+            request=request,
+            username=username,
+        )
+        return HTMLResponse(html)
+    except Exception as e:
+        logger.error("Enroll success template error: %s", str(e))
+        return HTMLResponse("<h1>Enrollment successful.</h1>")
+
 
 @app.get("/callback")
 async def callback(request: Request, code: str, state: str):
@@ -109,11 +124,16 @@ async def callback(request: Request, code: str, state: str):
     set_guest_name(site, mac, userinfo.get("preferred_username", "Guest"), user_agent)
 
     if not success:
-        return templates.TemplateResponse("error.html", {
-            "request": request,
-            "message": "Failed to authorize your device. Please try again or ask for help."
-        })
-
+        try:
+            template = templates.env.get_template("error.html")
+            html = template.render(
+                request=request,
+                message="Failed to authorize your device. Please try again or ask for help."
+            )
+            return HTMLResponse(html)
+        except Exception as e:
+            logger.error("Error template error: %s", str(e))
+            return HTMLResponse("<h1>Failed to authorize your device. Please try again or ask for help.</h1>")
 
     try:
         template = templates.env.get_template("success.html")
@@ -129,4 +149,3 @@ async def callback(request: Request, code: str, state: str):
     except Exception as e:
         logger.error("Success template error: %s", str(e))
         return RedirectResponse(original_url or "http://captive.apple.com/hotspot-detect.html")
-

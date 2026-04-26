@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-SCOPES = "openid email profile"
+SCOPES = "openid email profile attributes"
 
 
 def get_authorization_url(config: AppConfig, state: str) -> str:

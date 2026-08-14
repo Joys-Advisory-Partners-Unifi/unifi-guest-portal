@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.concurrency import run_in_threadpool
 
 from app.auth import get_authorization_url, exchange_code_for_token, get_userinfo, get_guest_duration
 from app.config import load_config
@@ -118,10 +119,12 @@ async def callback(request: Request, code: str, state: str):
         raise HTTPException(status_code=500, detail="Authentication failed.")
 
     duration = get_guest_duration(userinfo, site.default_duration_minutes)
-    success = authorize_guest(site, mac, duration)
+    success = await run_in_threadpool(authorize_guest, site, mac, duration)
     user_agent = request.headers.get("user-agent", "").lower()
     logger.info("User agent: %s", user_agent)
-    set_guest_name(site, mac, userinfo.get("preferred_username", "Guest"), user_agent)
+    await run_in_threadpool(
+        set_guest_name, site, mac, userinfo.get("preferred_username", "Guest"), user_agent
+    )
 
     if not success:
         try:

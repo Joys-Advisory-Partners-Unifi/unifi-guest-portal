@@ -2,6 +2,7 @@ services:
   portal:
     build: .
     restart: unless-stopped
+    hostname: ${PORTAL_HOSTNAME:?required}
     env_file:
       - .env
     expose:
@@ -16,6 +17,7 @@ services:
   nginx:
     image: nginx:alpine
     restart: unless-stopped
+    hostname: ${PORTAL_HOSTNAME:?required}
     ports:
       - "80:80"
     volumes:

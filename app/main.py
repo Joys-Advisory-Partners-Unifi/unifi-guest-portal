@@ -9,7 +9,6 @@ from starlette.concurrency import run_in_threadpool
 
 from app.auth import get_authorization_url, exchange_code_for_token, get_userinfo, get_guest_duration
 from app.config import load_config
-from app.unifi import authorize_guest
 
 from app.unifi import authorize_guest, set_guest_name
 
@@ -94,6 +93,15 @@ async def enroll_success(request: Request, username: str = ""):
         logger.error("Enroll success template error: %s", str(e))
         return HTMLResponse("<h1>Enrollment successful.</h1>")
 
+@app.get("/enroll-complete", response_class=HTMLResponse)
+async def enroll_complete(request: Request):
+    try:
+        template = templates.env.get_template("enroll-complete.html")
+        html = template.render(request=request)
+        return HTMLResponse(html)
+    except Exception as e:
+        logger.error("Enroll complete template error: %s", str(e))
+        return HTMLResponse("<h1>Your account has been created.</h1>")
 
 @app.get("/callback")
 async def callback(request: Request, code: str, state: str):
